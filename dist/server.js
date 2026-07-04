@@ -88,8 +88,16 @@ app.get('/api/pokemon/:id', async (req, res) => {
 // API endpoint para buscar Pokémon com paginação (máximo 20 por vez)
 app.get('/api/pokemons', async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit) || 20, 20); // Máximo 20
-    const page = parseInt(req.query.page) || 1;
-    const offset = (page - 1) * limit;
+    let offset = 0;
+    let page = 1;
+    if (req.query.offset !== undefined) {
+        offset = parseInt(req.query.offset);
+        page = Math.floor(offset / limit) + 1;
+    }
+    else {
+        page = parseInt(req.query.page) || 1;
+        offset = (page - 1) * limit;
+    }
     try {
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`);
         const data = await response.json();

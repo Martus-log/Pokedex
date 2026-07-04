@@ -90,7 +90,7 @@ const generationData = {
   '7': { offset: 721, limit: 88, name: 'Gen 7' },
   '8': { offset: 809, limit: 96, name: 'Gen 8' },
   '9': { offset: 905, limit: 120, name: 'Gen 9' },
-  'all': { offset: 0, limit: 151, name: 'Todas (Gen 1)' } // Padrão: apenas Gen 1
+  'all': { offset: 0, limit: 1025, name: 'Todas as Gerações' }
 };
 
 // DOM elements
@@ -124,11 +124,14 @@ async function loadPokemonPage() {
   
   try {
     // Usa o backend como proxy - 1 chamada apenas
-    const page = Math.floor(generationState.offset / LIMIT) + 1;
-    const response = await fetch(`/api/pokemons?limit=${limit}&page=${page}`);
+    const response = await fetch(`/api/pokemons?limit=${limit}&offset=${generationState.offset}`);
     if (!response.ok) throw new Error(`Backend error: ${response.status}`);
     
     const data = await response.json();
+    if (generationState.currentGen === 'all' && data.total) {
+      generationState.totalCount = data.total;
+      generationData['all'].limit = data.total;
+    }
     const newPokemons = data.pokemons || [];
     
     if (newPokemons.length === 0) {
@@ -185,8 +188,8 @@ async function loadGeneration(gen) {
     currentGen: gen,
     loadedCount: 0,
     totalCount: genData.limit,
-    offset: 0,
-    isLoading: true
+    offset: genData.offset,
+    isLoading: false
   };
   
   // Limpa UI
@@ -396,8 +399,8 @@ async function openModal(pokemon) {
       statsContainer.innerHTML += `
         <div class="stat-bar-container">
           <span class="stat-label">${label}</span>
-          <div class="stat-bar">
-            <div class="stat-fill" style="width: ${percentage}%"></div>
+          <div class="stat-bar-wrapper">
+            <div class="stat-bar" style="width: ${percentage}%"></div>
           </div>
           <span class="stat-value">${stat.value}</span>
         </div>
@@ -425,25 +428,38 @@ function renderEvolutionChain(chain) {
   const container = document.getElementById('evolutionChain');
   container.innerHTML = '';
   
-  function processEvo(evo, stage = 0) {
-    const name = capitalizeFirst(evo.species.name);
-    const url = evo.species.url;
-    const id = url.match(/\/pokemon\/(\d+)\/$/)?.[1] || '0';
-    
-    container.innerHTML += `
-      <div class="evo-stage" style="flex: 1; text-align: center; position: relative;">
-        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" alt="${name}" style="width: 80px; height: 80px;">
-        <p style="font-size: 12px; margin-top: 5px;">${name}</p>
-        ${evo.evolves_to && evo.evolves_to.length > 0 ? '<span style="position: absolute; right: -20px; top: 40px; font-size: 20px;">→</span>' : ''}
-      </div>
-    `;
-    
-    if (evo.evolves_to && evo.evolves_to.length > 0) {
-      evo.evolves_to.forEach(next => processEvo(next, stage + 1));
-    }
+  if (!Array.isArray(chain) || chain.length === 0) {
+    container.innerHTML = '<p class="no-evo">Sem evoluções disponíveis</p>';
+    return;
   }
   
-  processEvo(chain[0] || chain);
+  const chainContainer = document.createElement('div');
+  chainContainer.className = 'evo-chain-container';
+  
+  chain.forEach((evo, index) => {
+    const name = capitalizeFirst(evo.name);
+    const url = evo.url;
+    const id = url.match(/\/pokemon-species\/(\d+)\/$/)?.[1] || url.match(/\/pokemon\/(\d+)\/$/)?.[1] || '0';
+    
+    const stageDiv = document.createElement('div');
+    stageDiv.className = 'evo-stage';
+    stageDiv.innerHTML = `
+      <div class="evo-image-container">
+        <img class="evo-image" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" alt="${name}">
+      </div>
+      <p class="evo-name">${name}</p>
+    `;
+    chainContainer.appendChild(stageDiv);
+    
+    if (index < chain.length - 1) {
+      const arrowSpan = document.createElement('span');
+      arrowSpan.className = 'evo-arrow';
+      arrowSpan.textContent = '→';
+      chainContainer.appendChild(arrowSpan);
+    }
+  });
+  
+  container.appendChild(chainContainer);
 }
 
 // Close modal
@@ -509,7 +525,7 @@ function setupSearchListener() {
       
       filteredPokemons = allPokemons.filter(p => 
         p.name.toLowerCase().includes(query) ||
-        p.types.some(t => typeToPortuguese[t]?.toLowerCase().includes(query))
+        p.types.some(t => t.toLowerCase().includes(query) || typeToPortuguese[t]?.toLowerCase().includes(query))
       );
       
       renderSearchResults(filteredPokemons, query);
@@ -543,49 +559,28 @@ function renderSearchResults(pokemons, query) {
 
 // Setup floating actions
 function setupFloatingActions() {
-  const sortBtn = document.getElementById('sortBtn');
-  const sortMenu = document.getElementById('sortMenu');
   const filterTypeBtn = document.getElementById('filterTypeBtn');
   const typeFilterDrawer = document.getElementById('typeFilterDrawer');
   const drawerClose = document.getElementById('drawerClose');
-  const drawerBackdrop = document.getElementById('drawerBackdrop');
   
-  // Sort menu
-  if (sortBtn && sortMenu) {
-    sortBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      sortMenu.style.display = sortMenu.style.display === 'block' ? 'none' : 'block';
-    });
-    
-    document.querySelectorAll('.sort-option').forEach(option => {
-      option.addEventListener('click', (e) => {
-        const sortType = e.target.getAttribute('data-sort');
-        sortPokemons(sortType);
-        sortMenu.style.display = 'none';
-      });
-    });
-    
-    document.addEventListener('click', () => {
-      sortMenu.style.display = 'none';
-    });
-  }
+  const drawerBackdrop = document.getElementById('drawerBackdrop');
   
   // Type filter drawer
   if (filterTypeBtn && typeFilterDrawer) {
     filterTypeBtn.addEventListener('click', () => {
-      typeFilterDrawer.classList.add('open');
+      typeFilterDrawer.classList.add('active');
     });
   }
   
   if (drawerClose) {
     drawerClose.addEventListener('click', () => {
-      typeFilterDrawer.classList.remove('open');
+      typeFilterDrawer.classList.remove('active');
     });
   }
   
   if (drawerBackdrop) {
     drawerBackdrop.addEventListener('click', () => {
-      typeFilterDrawer.classList.remove('open');
+      typeFilterDrawer.classList.remove('active');
     });
   }
   
@@ -593,7 +588,7 @@ function setupFloatingActions() {
   document.querySelectorAll('.type-filter-option').forEach(button => {
     button.addEventListener('click', async (e) => {
       const typeEnglish = e.target.getAttribute('data-type');
-      typeFilterDrawer.classList.remove('open');
+      typeFilterDrawer.classList.remove('active');
       
       if (typeEnglish === 'all') {
         await loadGeneration(generationState.currentGen);
@@ -605,24 +600,7 @@ function setupFloatingActions() {
   });
 }
 
-// Sort Pokémon
-function sortPokemons(sortType) {
-  switch(sortType) {
-    case 'number-asc':
-      filteredPokemons.sort((a, b) => a.id - b.id);
-      break;
-    case 'number-desc':
-      filteredPokemons.sort((a, b) => b.id - a.id);
-      break;
-    case 'name-asc':
-      filteredPokemons.sort((a, b) => a.name.localeCompare(b.name));
-      break;
-    case 'name-desc':
-      filteredPokemons.sort((a, b) => b.name.localeCompare(a.name));
-      break;
-  }
-  renderPokemons(filteredPokemons);
-}
+
 
 // Load Pokémon by type (máximo 20 de uma vez)
 async function loadPokemonsByType(typeNameEnglish) {
@@ -636,51 +614,18 @@ async function loadPokemonsByType(typeNameEnglish) {
     loadingDiv.style.display = 'block';
     loadingDiv.innerHTML = '<p>Carregando Pokémon do tipo...</p>';
     
-    // Busca lista de Pokémon do tipo
-    const typeResponse = await fetch(`https://pokeapi.co/api/v2/type/${typeNameEnglish}`);
-    if (!typeResponse.ok) throw new Error('Failed to load type');
+    // Busca os dados já prontos do backend
+    const response = await fetch(`/api/type/${typeNameEnglish}`);
+    if (!response.ok) throw new Error('Failed to load type');
     
-    const typeData = await typeResponse.json();
-    const pokemonUrls = typeData.pokemon.slice(0, LIMIT).map(p => p.pokemon.url);
+    const data = await response.json();
+    const typePokemons = data.pokemons || [];
     
-    // Carrega detalhes em lotes de 5
-    for (let i = 0; i < pokemonUrls.length; i += 5) {
-      const batch = pokemonUrls.slice(i, i + 5);
-      
-      const details = await Promise.all(batch.map(async (url) => {
-        try {
-          const response = await fetch(url);
-          if (!response.ok) return null;
-          const data = await response.json();
-          const idMatch = url.match(/\/pokemon\/(\d+)\/$/);
-          
-          return {
-            id: idMatch ? parseInt(idMatch[1]) : 0,
-            name: data.name,
-            types: data.types.map(t => t.type.name),
-            abilities: data.abilities.map(a => a.ability.name),
-            image: data.sprites.front_default || data.sprites.other['official-artwork'].front_default,
-            height: data.height,
-            weight: data.weight,
-            description: ''
-          };
-        } catch (err) {
-          console.error(`Error loading ${url}:`, err);
-          return null;
-        }
-      }));
-      
-      const validDetails = details.filter(d => d !== null);
-      allPokemons.push(...validDetails);
-      filteredPokemons = [...allPokemons];
-      allPokemonsList = [...allPokemons];
-      
-      renderPokemons(allPokemons);
-      
-      if (i + 5 < pokemonUrls.length) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-    }
+    allPokemons.push(...typePokemons);
+    filteredPokemons = [...allPokemons];
+    allPokemonsList = [...allPokemons];
+    
+    renderPokemons(allPokemons);
     
     loadingDiv.style.display = 'none';
     loadMoreButton.style.display = 'none';

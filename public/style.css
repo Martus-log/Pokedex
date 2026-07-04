@@ -40,12 +40,12 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: 
-    radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0));
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, #eee, rgba(0, 0, 0, 0)),
+    radial-gradient(2px 2px at 40px 70px, #fff, rgba(0, 0, 0, 0)),
+    radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0, 0, 0, 0)),
+    radial-gradient(2px 2px at 90px 40px, #fff, rgba(0, 0, 0, 0)),
+    radial-gradient(2px 2px at 130px 80px, #fff, rgba(0, 0, 0, 0));
   background-repeat: repeat;
   background-size: 200px 200px;
   opacity: 0.3;
@@ -54,8 +54,15 @@ body::before {
 }
 
 @keyframes twinkle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .container {
@@ -116,7 +123,7 @@ header {
   font-family: 'Roboto', sans-serif;
   font-size: 13px;
 }
-}
+
 
 /* Pokébolas decorativas de fundo */
 header::after {
@@ -126,63 +133,63 @@ header::after {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: 
+  background-image:
     /* Pokébola grande canto superior esquerdo */
-    radial-gradient(circle at 10% 20%, 
+    radial-gradient(circle at 10% 20%,
       rgba(255, 255, 255, 0.03) 0%,
       rgba(255, 255, 255, 0.03) 15%,
       transparent 16%),
-    radial-gradient(circle at 10% 20%, 
+    radial-gradient(circle at 10% 20%,
       rgba(220, 10, 45, 0.05) 0%,
       rgba(220, 10, 45, 0.05) 12%,
       transparent 13%),
     /* Pokébola média canto superior direito */
-    radial-gradient(circle at 90% 15%, 
+    radial-gradient(circle at 90% 15%,
       rgba(255, 255, 255, 0.03) 0%,
       rgba(255, 255, 255, 0.03) 12%,
       transparent 13%),
-    radial-gradient(circle at 90% 15%, 
+    radial-gradient(circle at 90% 15%,
       rgba(220, 10, 45, 0.05) 0%,
       rgba(220, 10, 45, 0.05) 10%,
       transparent 11%),
     /* Pokébola pequena centro esquerdo */
-    radial-gradient(circle at 5% 50%, 
+    radial-gradient(circle at 5% 50%,
       rgba(255, 255, 255, 0.02) 0%,
       rgba(255, 255, 255, 0.02) 8%,
       transparent 9%),
-    radial-gradient(circle at 5% 50%, 
+    radial-gradient(circle at 5% 50%,
       rgba(220, 10, 45, 0.04) 0%,
       rgba(220, 10, 45, 0.04) 6%,
       transparent 7%),
     /* Pokébola média centro direito */
-    radial-gradient(circle at 95% 60%, 
+    radial-gradient(circle at 95% 60%,
       rgba(255, 255, 255, 0.03) 0%,
       rgba(255, 255, 255, 0.03) 10%,
       transparent 11%),
-    radial-gradient(circle at 95% 60%, 
+    radial-gradient(circle at 95% 60%,
       rgba(220, 10, 45, 0.05) 0%,
       rgba(220, 10, 45, 0.05) 8%,
       transparent 9%),
     /* Pokébola pequena inferior esquerdo */
-    radial-gradient(circle at 15% 85%, 
+    radial-gradient(circle at 15% 85%,
       rgba(255, 255, 255, 0.02) 0%,
       rgba(255, 255, 255, 0.02) 6%,
       transparent 7%),
-    radial-gradient(circle at 15% 85%, 
+    radial-gradient(circle at 15% 85%,
       rgba(220, 10, 45, 0.04) 0%,
       rgba(220, 10, 45, 0.04) 5%,
       transparent 6%),
     /* Pokébola média inferior direito */
-    radial-gradient(circle at 85% 90%, 
+    radial-gradient(circle at 85% 90%,
       rgba(255, 255, 255, 0.03) 0%,
       rgba(255, 255, 255, 0.03) 9%,
       transparent 10%),
-    radial-gradient(circle at 85% 90%, 
+    radial-gradient(circle at 85% 90%,
       rgba(220, 10, 45, 0.05) 0%,
       rgba(220, 10, 45, 0.05) 7%,
       transparent 8%),
     /* Linha divisória da pokébola (detalhe preto no meio) */
-    linear-gradient(90deg, 
+    linear-gradient(90deg,
       transparent 0%,
       transparent 48%,
       rgba(0, 0, 0, 0.02) 49%,
@@ -201,20 +208,23 @@ header::before {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.1) 50%,
-    transparent 70%
-  );
+  background: linear-gradient(45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 70%);
   animation: shine 3s infinite;
   z-index: 1;
   pointer-events: none;
 }
 
 @keyframes shine {
-  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
 }
 
 /* Logo da Pokédex - ícone e texto na mesma linha */
@@ -225,7 +235,8 @@ header::before {
   gap: 20px;
   margin-bottom: 25px;
   position: relative;
-  z-index: 3; /* Acima das decorações */
+  z-index: 3;
+  /* Acima das decorações */
 }
 
 .logo-circle {
@@ -264,10 +275,12 @@ h1 {
 }
 
 .search-container {
-  max-width: 500px; /* Aumentado de 400px para mais espaço */
+  max-width: 500px;
+  /* Aumentado de 400px para mais espaço */
   margin: 0 auto;
   position: relative;
-  z-index: 3; /* Acima das decorações */
+  z-index: 3;
+  /* Acima das decorações */
 }
 
 #searchInput {
@@ -315,7 +328,8 @@ h1 {
   overflow: hidden;
   background-clip: padding-box;
   padding: 0;
-  opacity: 0; /* Para animação fade-in */
+  opacity: 0;
+  /* Para animação fade-in */
   transform: translateY(20px);
   animation: cardFadeIn 0.4s ease forwards;
 }
@@ -335,7 +349,7 @@ h1 {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   transition: left 0.6s;
   z-index: 10;
   pointer-events: none;
@@ -353,7 +367,8 @@ h1 {
 
 /* Container da imagem (topo - 70% do card) */
 .pokemon-image-container {
-  background: #74CB48; /* Cor padrão, sobrescrita via inline style no JS */
+  background: #74CB48;
+  /* Cor padrão, sobrescrita via inline style no JS */
   padding: 20px 15px;
   display: flex;
   justify-content: center;
@@ -368,14 +383,14 @@ h1 {
   width: 130px;
   height: 130px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
   transition: filter 0.3s, transform 0.3s;
   position: relative;
   z-index: 2;
 }
 
 .pokemon-card:hover img {
-  filter: drop-shadow(0 12px 24px rgba(0,0,0,0.5));
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.5));
   transform: scale(1.05);
 }
 
@@ -384,16 +399,18 @@ h1 {
   background: #ffffff;
   padding: 15px 12px 12px 12px;
   text-align: center;
-  border-top: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .pokemon-id {
   font-family: 'Press Start 2P', cursive;
   font-size: 0.7rem;
-  color: #2d2d2d; /* Cinza muito escuro para máxima legibilidade */
+  color: #2d2d2d;
+  /* Cinza muito escuro para máxima legibilidade */
   margin-bottom: 8px;
   letter-spacing: 1px;
-  font-weight: 700; /* Bold para mais contraste */
+  font-weight: 700;
+  /* Bold para mais contraste */
 }
 
 .pokemon-card h3 {
@@ -496,12 +513,12 @@ h1 {
   height: 130px;
   object-fit: contain;
   margin-bottom: 15px;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   transition: filter 0.3s;
 }
 
 .pokemon-card:hover img {
-  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
 }
 
 .pokemon-card h3 {
@@ -509,9 +526,11 @@ h1 {
   font-size: 0.9rem;
   text-transform: capitalize;
   margin-bottom: 12px;
-  color: #1a1a2e; /* Cor escura para legibilidade sobre fundos claros */
+  color: #1a1a2e;
+  /* Cor escura para legibilidade sobre fundos claros */
   letter-spacing: 1px;
-  text-shadow: 0 0 3px rgba(255, 255, 255, 0.8); /* Sombra branca suave */
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+  /* Sombra branca suave */
   font-weight: 700;
 }
 
@@ -529,29 +548,95 @@ h1 {
   font-weight: bold;
   text-transform: capitalize;
   color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   font-family: 'Roboto', sans-serif;
   letter-spacing: 0.5px;
 }
 
 /* Cores dos tipos */
-.type-normal { background: linear-gradient(135deg, #A8A878, #9a9a68); }
-.type-fogo, .type-fire { background: linear-gradient(135deg, #F08030, #e07020); }
-.type-agua, .type-water { background: linear-gradient(135deg, #6890F0, #5880e0); }
-.type-eletrico, .type-electric { background: linear-gradient(135deg, #F8D030, #e8c020); }
-.type-grama, .type-grass { background: linear-gradient(135deg, #78C850, #68b840); }
-.type-gelo, .type-ice { background: linear-gradient(135deg, #98D8D8, #88c8c8); }
-.type-lutador, .type-fighting { background: linear-gradient(135deg, #C03028, #b02018); }
-.type-venenoso, .type-poison { background: linear-gradient(135deg, #A040A0, #903090); }
-.type-terra, .type-ground { background: linear-gradient(135deg, #E0C068, #d0b058); }
-.type-voador, .type-flying { background: linear-gradient(135deg, #A890F0, #9880e0); }
-.type-psiquico, .type-psychic { background: linear-gradient(135deg, #F85888, #e84878); }
-.type-inseto, .type-bug { background: linear-gradient(135deg, #A8B820, #98a810); }
-.type-pedra, .type-rock { background: linear-gradient(135deg, #B8A038, #a89028); }
-.type-fantasma, .type-ghost { background: linear-gradient(135deg, #705898, #604888); }
-.type-dragao, .type-dragon { background: linear-gradient(135deg, #7038F8, #6028e8); }
-.type-aco, .type-steel { background: linear-gradient(135deg, #B8B8D0, #a8a8c0); }
-.type-fada, .type-fairy { background: linear-gradient(135deg, #EE99AC, #de899c); }
+.type-normal {
+  background: linear-gradient(135deg, #A8A878, #9a9a68);
+}
+
+.type-fogo,
+.type-fire {
+  background: linear-gradient(135deg, #F08030, #e07020);
+}
+
+.type-agua,
+.type-water {
+  background: linear-gradient(135deg, #6890F0, #5880e0);
+}
+
+.type-eletrico,
+.type-electric {
+  background: linear-gradient(135deg, #F8D030, #e8c020);
+}
+
+.type-grama,
+.type-grass {
+  background: linear-gradient(135deg, #78C850, #68b840);
+}
+
+.type-gelo,
+.type-ice {
+  background: linear-gradient(135deg, #98D8D8, #88c8c8);
+}
+
+.type-lutador,
+.type-fighting {
+  background: linear-gradient(135deg, #C03028, #b02018);
+}
+
+.type-venenoso,
+.type-poison {
+  background: linear-gradient(135deg, #A040A0, #903090);
+}
+
+.type-terra,
+.type-ground {
+  background: linear-gradient(135deg, #E0C068, #d0b058);
+}
+
+.type-voador,
+.type-flying {
+  background: linear-gradient(135deg, #A890F0, #9880e0);
+}
+
+.type-psiquico,
+.type-psychic {
+  background: linear-gradient(135deg, #F85888, #e84878);
+}
+
+.type-inseto,
+.type-bug {
+  background: linear-gradient(135deg, #A8B820, #98a810);
+}
+
+.type-pedra,
+.type-rock {
+  background: linear-gradient(135deg, #B8A038, #a89028);
+}
+
+.type-fantasma,
+.type-ghost {
+  background: linear-gradient(135deg, #705898, #604888);
+}
+
+.type-dragao,
+.type-dragon {
+  background: linear-gradient(135deg, #7038F8, #6028e8);
+}
+
+.type-aco,
+.type-steel {
+  background: linear-gradient(135deg, #B8B8D0, #a8a8c0);
+}
+
+.type-fada,
+.type-fairy {
+  background: linear-gradient(135deg, #EE99AC, #de899c);
+}
 
 /* Loading e Load More */
 .loading {
@@ -612,6 +697,8 @@ h1 {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
   backdrop-filter: blur(10px);
   animation: fadeIn 0.3s;
+  justify-content: center;
+  align-items: center;
 }
 
 .modal-active {
@@ -670,13 +757,18 @@ h1 {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
   animation: rotate 20s linear infinite;
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .modal-header img {
@@ -684,15 +776,22 @@ h1 {
   height: 140px;
   object-fit: contain;
   margin-right: 25px;
-  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
   animation: float 3s ease-in-out infinite;
   position: relative;
   z-index: 2;
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .modal-info {
@@ -705,7 +804,7 @@ h1 {
   font-size: 1.8rem;
   text-transform: capitalize;
   margin-bottom: 8px;
-  text-shadow: 3px 3px 0px rgba(0,0,0,0.3);
+  text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
 .pokemon-id {
@@ -800,8 +899,13 @@ h1 {
 
 /* Animações */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideIn {
@@ -809,6 +913,7 @@ h1 {
     transform: translateY(-50px) scale(0.9);
     opacity: 0;
   }
+
   to {
     transform: translateY(0) scale(1);
     opacity: 1;
@@ -840,58 +945,58 @@ h1 {
   h1 {
     font-size: 1.5rem;
   }
-  
+
   .pokedex-logo {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .logo-circle {
     width: 50px;
     height: 50px;
   }
-  
+
   .pokedex-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 20px;
   }
-  
+
   .pokemon-card {
     padding: 20px 15px;
   }
-  
+
   .pokemon-card img {
     width: 100px;
     height: 100px;
   }
-  
+
   .pokemon-card h3 {
     font-size: 0.7rem;
   }
-  
+
   .modal-header {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .modal-header img {
     margin-right: 0;
     margin-bottom: 20px;
   }
-  
+
   .modal-info h2 {
     font-size: 1.3rem;
   }
-  
+
   .stats {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .modal-content {
     margin: 10px;
   }
-  
+
   .modal-body {
     padding: 20px;
   }
@@ -912,7 +1017,9 @@ h1 {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Filtros por Tipo - Scroll horizontal em linha única */
@@ -922,13 +1029,16 @@ h1 {
   justify-content: flex-start;
   gap: 8px;
   margin-top: 25px;
-  padding: 10px 70px 10px 30px; /* Padding extra à direita (70px) para último botão não cortar */
+  padding: 10px 70px 10px 30px;
+  /* Padding extra à direita (70px) para último botão não cortar */
   position: relative;
-  z-index: 3; /* Acima das decorações */
+  z-index: 3;
+  /* Acima das decorações */
   overflow-x: auto;
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox - esconde scrollbar */
+  scrollbar-width: none;
+  /* Firefox - esconde scrollbar */
 }
 
 /* Gradiente indicador de scroll à direita */
@@ -939,10 +1049,10 @@ h1 {
   right: 0;
   width: 40px;
   height: 100%;
-  background: linear-gradient(to right, 
-    transparent 0%,
-    rgba(220, 10, 45, 0.3) 50%,
-    rgba(220, 10, 45, 0.6) 100%);
+  background: linear-gradient(to right,
+      transparent 0%,
+      rgba(220, 10, 45, 0.3) 50%,
+      rgba(220, 10, 45, 0.6) 100%);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -977,8 +1087,15 @@ h1 {
 }
 
 @keyframes pulse-arrow {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0.9; }
+
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.9;
+  }
 }
 
 /* Esconder scrollbar no Chrome/Safari */
@@ -1320,7 +1437,7 @@ h1 {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   transform: rotate(45deg);
   transition: left 0.5s;
   opacity: 0;
@@ -1442,12 +1559,12 @@ h1 {
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
   }
-  
+
   .type-filter-option {
     padding: 16px 8px;
     font-size: 12px;
   }
-  
+
   .drawer-header h2 {
     font-size: 0.95rem;
   }
@@ -1458,12 +1575,12 @@ h1 {
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
-  
+
   .type-filter-option {
     padding: 14px 6px;
     font-size: 11px;
   }
-  
+
   .drawer-content {
     max-height: 70vh;
   }
@@ -1483,7 +1600,8 @@ h1 {
   letter-spacing: 1px;
   position: relative;
   overflow: hidden;
-  flex-shrink: 0; /* Não comprimir botões */
+  flex-shrink: 0;
+  /* Não comprimir botões */
   display: inline-block;
 }
 
@@ -1494,7 +1612,7 @@ h1 {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s;
 }
 
@@ -1505,7 +1623,7 @@ h1 {
 .type-btn:hover {
   background: var(--type-color, #999);
   transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.3), 0 0 15px var(--type-color, #999);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 0 0 15px var(--type-color, #999);
 }
 
 .type-btn.active {
