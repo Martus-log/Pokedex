@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Pokédex</title>
+  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="stats-evolution.css?v=20">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="pokedex-logo">
+        <div class="logo-circle"></div>
+        <h1>POKéDEX</h1>
+      </div>
+      
+      <!-- Seletor de Geração -->
+      <div class="generation-selector">
+        <select id="generationSelect" aria-label="Selecionar geração">
+          <option value="all">Todas as Gerações</option>
+          <option value="1">Gen 1 (151)</option>
+          <option value="2">Gen 2 (100)</option>
+          <option value="3">Gen 3 (135)</option>
+          <option value="4">Gen 4 (107)</option>
+          <option value="5">Gen 5 (156)</option>
+          <option value="6">Gen 6 (72)</option>
+          <option value="7">Gen 7 (88)</option>
+          <option value="8">Gen 8 (96)</option>
+          <option value="9">Gen 9 (120)</option>
+        </select>
+      </div>
+      
+      <!-- Barra de busca (oculta inicialmente, mostrada pelo botão) -->
+      <div class="search-container" id="searchContainer" style="display: none;">
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Buscar por nome ou tipo..." 
+          aria-label="Buscar Pokémon"
+        >
+        <button class="search-close-btn" id="searchCloseBtn" aria-label="Fechar busca">&times;</button>
+      </div>
+    </header>
+
+    <main>
+      <div id="pokedexGrid" class="pokedex-grid">
+        <!-- Pokémon cards will be inserted here -->
+      </div>
+      <div id="loading" class="loading">
+        <p>Carregando Pokémon...</p>
+      </div>
+      <div id="loadMore" class="load-more">
+        <button onclick="loadMore()">Carregar Mais</button>
+      </div>
+    </main>
+
+    <!-- Botões de Ação Flutuantes -->
+    <div class="floating-actions">
+      <!-- Botão de Ordenar -->
+      <div class="floating-action-wrapper">
+        <span class="floating-tooltip">Ordenar</span>
+        <button class="floating-btn" id="sortBtn" aria-label="Ordenar Pokémon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/>
+          </svg>
+        </button>
+        <!-- Menu de Ordenação -->
+        <div class="sort-menu" id="sortMenu">
+          <button class="sort-option" data-sort="number-asc">Número ↑</button>
+          <button class="sort-option" data-sort="number-desc">Número ↓</button>
+          <button class="sort-option" data-sort="name-asc">Nome A-Z</button>
+          <button class="sort-option" data-sort="name-desc">Nome Z-A</button>
+        </div>
+      </div>
+
+      <!-- Botão de Filtrar por Tipo -->
+      <div class="floating-action-wrapper">
+        <span class="floating-tooltip">Filtrar por tipo</span>
+        <button class="floating-btn" id="filterTypeBtn" aria-label="Filtrar por tipo">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+            <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Botão de Filtrar por Nome -->
+      <div class="floating-action-wrapper">
+        <span class="floating-tooltip">Filtrar por nome</span>
+        <button class="floating-btn" id="filterNameBtn" aria-label="Filtrar por nome">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Painel de Filtros por Tipo (Drawer) -->
+    <div class="type-filter-drawer" id="typeFilterDrawer">
+      <div class="drawer-backdrop" id="drawerBackdrop"></div>
+      <div class="drawer-content">
+        <div class="drawer-header">
+          <h2>Filtrar por Tipo</h2>
+          <button class="drawer-close" id="drawerClose">&times;</button>
+        </div>
+        <div class="drawer-body">
+          <button class="type-filter-option all-types" data-type="all">
+            TODOS
+          </button>
+          <div class="type-filters-grid">
+            <button class="type-filter-option" data-type="normal">
+              Normal
+            </button>
+            <button class="type-filter-option" data-type="fire">
+              Fogo
+            </button>
+            <button class="type-filter-option" data-type="water">
+              Água
+            </button>
+            <button class="type-filter-option" data-type="grass">
+              Grama
+            </button>
+            <button class="type-filter-option" data-type="electric">
+              Elétrico
+            </button>
+            <button class="type-filter-option" data-type="ice">
+              Gelo
+            </button>
+            <button class="type-filter-option" data-type="fighting">
+              Lutador
+            </button>
+            <button class="type-filter-option" data-type="poison">
+              Venenoso
+            </button>
+            <button class="type-filter-option" data-type="ground">
+              Terra
+            </button>
+            <button class="type-filter-option" data-type="flying">
+              Voador
+            </button>
+            <button class="type-filter-option" data-type="psychic">
+              Psíquico
+            </button>
+            <button class="type-filter-option" data-type="bug">
+              Inseto
+            </button>
+            <button class="type-filter-option" data-type="rock">
+              Pedra
+            </button>
+            <button class="type-filter-option" data-type="ghost">
+              Fantasma
+            </button>
+            <button class="type-filter-option" data-type="dragon">
+              Dragão
+            </button>
+            <button class="type-filter-option" data-type="steel">
+              Aço
+            </button>
+            <button class="type-filter-option" data-type="fairy">
+              Fada
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Pokémon details -->
+  <div id="pokemonModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()" aria-label="Fechar modal">&times;</button>
+      <div class="modal-header">
+        <img id="modalImage" src="" alt="">
+        <div class="modal-info">
+          <h2 id="modalTitle"></h2>
+          <p id="modalId" class="pokemon-id"></p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div id="modalBodyContent">
+          <!-- Evolution Chain -->
+          <div class="modal-section evolution-section">
+            <h3>Cadeia Evolutiva</h3>
+            <div id="evolutionChain" class="evolution-chain">
+              <!-- Evolutions will be inserted here -->
+            </div>
+          </div>
+          
+          <!-- Description -->
+          <div class="modal-section">
+            <h3>Descrição</h3>
+            <p id="modalDescription"></p>
+          </div>
+          
+          <!-- Types -->
+          <div class="modal-section">
+            <h3>Tipos</h3>
+            <div id="modalTypes" class="types-container"></div>
+          </div>
+          
+          <!-- Abilities -->
+          <div class="modal-section">
+            <h3>Habilidades</h3>
+            <div id="modalAbilities" class="abilities-container"></div>
+          </div>
+          
+          <!-- Stats Bars -->
+          <div class="modal-section stats-section">
+            <h3>Status Base</h3>
+            <div id="statsBars" class="stats-bars">
+              <!-- Stat bars will be inserted here -->
+            </div>
+            <div class="stats-total">
+              <span>Total:</span>
+              <span id="statsTotal">0</span>
+            </div>
+          </div>
+          
+          <!-- Height and Weight -->
+          <div class="modal-section physical-stats">
+            <div class="physical-stat">
+              <span class="stat-icon">📏</span>
+              <span class="stat-label">Altura:</span>
+              <span id="modalHeight"></span>
+            </div>
+            <div class="physical-stat">
+              <span class="stat-icon">⚖️</span>
+              <span class="stat-label">Peso:</span>
+              <span id="modalWeight"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js?v=23"></script>
+</body>
+</html>
