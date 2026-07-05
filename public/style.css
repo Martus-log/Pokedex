@@ -84,6 +84,7 @@ header {
   box-shadow: 0 10px 30px rgba(220, 10, 45, 0.5);
   border: 4px solid #ff6b6b;
   position: relative;
+  overflow: hidden;
 }
 
 /* Seletor de Geração */
