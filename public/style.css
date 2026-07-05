@@ -434,9 +434,10 @@ h1 {
 .type-bug, .type-inseto { background: linear-gradient(135deg, #A8B820, #98a810); }
 .type-rock, .type-pedra { background: linear-gradient(135deg, #B8A038, #a89028); }
 .type-ghost, .type-fantasma { background: linear-gradient(135deg, #705898, #604888); }
-.type-dragon, .type-dragao { background: linear-gradient(135deg, #7038F8, #6028e8); }
-.type-steel, .type-aco { background: linear-gradient(135deg, #B8B8D0, #a8a8c0); }
 .type-fairy, .type-fada { background: linear-gradient(135deg, #EE99AC, #de899c); }
+.type-dark, .type-sombrio { background: linear-gradient(135deg, #705840, #604830); }
+.type-dark { background-color: #75574C; color: white; }
+
 
 .pokemon-card[data-type*="fogo"], .pokemon-card[data-type*="fire"] { border-color: #F08030; }
 .pokemon-card[data-type*="agua"], .pokemon-card[data-type*="water"] { border-color: #6890F0; }

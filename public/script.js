@@ -54,7 +54,8 @@ const typeToPortuguese = {
   'ghost': 'Fantasma',
   'dragon': 'Dragão',
   'steel': 'Aço',
-  'fairy': 'Fada'
+  'fairy': 'Fada',
+  'dark': 'Sombrio'
 };
 
 // Translation: Portuguese → English (for API calls)
