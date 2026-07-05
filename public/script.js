@@ -229,8 +229,8 @@ async function loadGeneration(gen) {
 
 /**
  * Atualiza o banner da geração com contagem atual
- // Atualiza o banner da geração com contagem atual
- function updateGenerationBanner() {
+ */
+function updateGenerationBanner() {
    const existingBanner = pokedexGrid.previousElementSibling;
    if (existingBanner && existingBanner.classList && existingBanner.classList.contains('generation-banner')) {
      const genData = generationData[generationState.currentGen];
