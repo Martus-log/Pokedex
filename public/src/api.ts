@@ -32,12 +32,10 @@ export const generationData: Record<string, GenerationData> = {
   '7': { offset: 721, limit: 88, name: 'Gen 7' },
   '8': { offset: 809, limit: 96, name: 'Gen 8' },
   '9': { offset: 905, limit: 120, name: 'Gen 9' }
-  // 'all' removido - usar gerações individuais para performance
 };
 
 /**
  * Busca um lote de Pokémon (máximo 20 por vez)
- * NÃO carrega todos de uma vez - usar paginação
  */
 export async function fetchPokemonBatch(offset: number, limit: number = 20): Promise<PokemonBasic[]> {
   const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`);
@@ -47,12 +45,11 @@ export async function fetchPokemonBatch(offset: number, limit: number = 20): Pro
   const data = await response.json();
   const pokemons: PokemonBasic[] = [];
   
-  // Carrega detalhes em lotes de 5 para não sobrecarregar
   const batchSize = 5;
   for (let i = 0; i < data.results.length; i += batchSize) {
     const batch = data.results.slice(i, i + batchSize);
     
-    const details = await Promise.all(batch.map(async (pokemon: any) => {
+    const details = await Promise.all(batch.map(async (pokemon: { name: string; url: string }) => {
       try {
         const detailResponse = await fetch(pokemon.url);
         if (!detailResponse.ok) return null;
@@ -62,8 +59,8 @@ export async function fetchPokemonBatch(offset: number, limit: number = 20): Pro
         return {
           id: idMatch ? parseInt(idMatch[1]) : 0,
           name: detail.name,
-          types: detail.types.map(t => t.type.name),
-          abilities: detail.abilities.map(a => a.ability.name),
+          types: detail.types.map((t: { type: { name: string } }) => t.type.name),
+          abilities: detail.abilities.map((a: { ability: { name: string } }) => a.ability.name),
           image: detail.sprites.front_default || detail.sprites.other['official-artwork'].front_default,
           height: detail.height,
           weight: detail.weight,
@@ -75,10 +72,9 @@ export async function fetchPokemonBatch(offset: number, limit: number = 20): Pro
       }
     }));
     
-    const validDetails = details.filter(d => d !== null);
+    const validDetails = details.filter((d): d is PokemonBasic => d !== null);
     pokemons.push(...validDetails);
     
-    // Delay para não sobrecarregar API
     if (i + batchSize < data.results.length) {
       await new Promise(resolve => setTimeout(resolve, 200));
     }
@@ -111,16 +107,14 @@ export async function fetchPokemonsByType(typeName: string): Promise<PokemonBasi
   }
   
   const typeData = await typeResponse.json();
-  // Limita a 20 Pokémon
-  const pokemonUrls = typeData.pokemon.slice(0, 20).map(p => p.pokemon.url);
+  const pokemonUrls = typeData.pokemon.slice(0, 20).map((p: { pokemon: { url: string } }) => p.pokemon.url);
   const pokemons: PokemonBasic[] = [];
   
-  // Carrega em lotes de 5
   const batchSize = 5;
   for (let i = 0; i < pokemonUrls.length; i += batchSize) {
     const batch = pokemonUrls.slice(i, i + batchSize);
     
-    const details = await Promise.all(batch.map(async (url) => {
+    const details = await Promise.all(batch.map(async (url: string) => {
       try {
         const response = await fetch(url);
         if (!response.ok) return null;
@@ -130,8 +124,8 @@ export async function fetchPokemonsByType(typeName: string): Promise<PokemonBasi
         return {
           id: idMatch ? parseInt(idMatch[1]) : 0,
           name: data.name,
-          types: data.types.map(t => t.type.name),
-          abilities: data.abilities.map(a => a.ability.name),
+          types: data.types.map((t: { type: { name: string } }) => t.type.name),
+          abilities: data.abilities.map((a: { ability: { name: string } }) => a.ability.name),
           image: data.sprites.front_default || data.sprites.other['official-artwork'].front_default,
           height: data.height,
           weight: data.weight,
@@ -143,7 +137,7 @@ export async function fetchPokemonsByType(typeName: string): Promise<PokemonBasi
       }
     }));
     
-    const validDetails = details.filter(d => d !== null);
+    const validDetails = details.filter((d): d is PokemonBasic => d !== null);
     pokemons.push(...validDetails);
     
     if (i + batchSize < batch.length) {
