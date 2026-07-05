@@ -124,10 +124,13 @@ async function loadPokemonPage() {
   loadingDiv.style.display = 'block';
   loadingDiv.innerHTML = `<p>Carregando ${generationState.loadedCount + 1} a ${Math.min(generationState.loadedCount + limit, genData.limit)}...</p>`;
   
-  // Renderiza skeletons para os novos cards
-  for (let i = 0; i < limit; i++) {
-    const skeleton = createSkeletonCard(generationState.loadedCount + i);
-    pokedexGrid.appendChild(skeleton);
+  // Renderiza skeletons APENAS se for o primeiro carregamento (grid vazio)
+  const isFirstLoad = pokedexGrid.children.length === 0;
+  if (isFirstLoad) {
+    for (let i = 0; i < limit; i++) {
+      const skeleton = createSkeletonCard(i);
+      pokedexGrid.appendChild(skeleton);
+    }
   }
   
   try {
@@ -152,11 +155,16 @@ async function loadPokemonPage() {
     filteredPokemons = [...allPokemons];
     allPokemonsList = [...allPokemons];
     
-    // Substitui skeletons pelos cards reais UM POR UM com pequeno delay
-    for (let i = 0; i < newUniquePokemons.length; i++) {
-      setTimeout(() => {
-        replaceSkeleton(generationState.loadedCount + i, newUniquePokemons[i]);
-      }, i * 50); // 50ms entre cada card para efeito cascata
+    // Se for primeiro load, substitui skeletons gradualmente
+    if (isFirstLoad) {
+      for (let i = 0; i < newUniquePokemons.length; i++) {
+        setTimeout(() => {
+          replaceSkeleton(i, newUniquePokemons[i]);
+        }, i * 50);
+      }
+    } else {
+      // Load more: adiciona cards diretamente sem skeletons
+      appendPokemons(newUniquePokemons, generationState.loadedCount);
     }
     
     // Atualiza estado
