@@ -121,7 +121,7 @@ async function loadPokemonPage() {
   }
   
   loadingDiv.style.display = 'block';
-  loadingDiv.innerHTML = `<p>Carregando ${generationState.loadedCount + 1} a ${Math.min(generationState.loadedCount + limit, genData.totalCount)}...</p>`;
+    loadingDiv.innerHTML = `<p>Carregando ${generationState.loadedCount + 1} a ${Math.min(generationState.loadedCount + limit, genData.limit)}...</p>`;
   
   try {
     // Usa o backend como proxy - 1 chamada apenas
