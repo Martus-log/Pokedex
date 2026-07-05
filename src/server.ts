@@ -128,58 +128,45 @@ app.get('/api/pokemons', async (req, res) => {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`);
     const data = await response.json();
 
-    // Buscar detalhes de cada Pokémon EM LOTES DE 5
-    const pokemons = [];
-    const batchSize = 5;
-    
-    for (let i = 0; i < data.results.length; i += batchSize) {
-      const batch = data.results.slice(i, i + batchSize);
-      
-      const batchDetails = await Promise.all(
-        batch.map(async (pokemon: { name: string; url: string }) => {
-          const detailResponse = await fetch(pokemon.url);
-          const detail = await detailResponse.json();
-          
-          // Buscar dados da espécie para descrição
-          const speciesResponse = await fetch(detail.species.url);
-          const species = await speciesResponse.json();
-          
-          // Obter descrição em inglês
-          let description = 'Description not available';
-          const enEntry = species.flavor_text_entries.find(
-            (entry: { language: { name: string } }) => entry.language.name === 'en'
-          );
-          
-          if (enEntry) {
-            description = enEntry.flavor_text.replace(/[\n\f]/g, ' ');
-          }
+    // Buscar detalhes de cada Pokémon EM PARALELO (lote único de 20)
+    const batchDetails = await Promise.all(
+      data.results.map(async (pokemon: { name: string; url: string }) => {
+        const [detailResponse, speciesResponse] = await Promise.all([
+          fetch(pokemon.url),
+          fetch(pokemon.url.replace('/pokemon/', '/pokemon-species/').replace(/\/\d+\/$/, '/'))
+        ]);
+        
+        const detail = await detailResponse.json();
+        const species = await speciesResponse.json();
+        
+        // Obter descrição em inglês
+        let description = 'Description not available';
+        const enEntry = species.flavor_text_entries.find(
+          (entry: { language: { name: string } }) => entry.language.name === 'en'
+        );
+        
+        if (enEntry) {
+          description = enEntry.flavor_text.replace(/[\n\f]/g, ' ');
+        }
 
-          // Manter tipos em inglês (original da API)
-          const types = detail.types.map((t: { type: { name: string } }) => t.type.name);
+        // Manter tipos em inglês (original da API)
+        const types = detail.types.map((t: { type: { name: string } }) => t.type.name);
 
-          return {
-            id: detail.id,
-            name: detail.name,
-            types: types,
-            abilities: detail.abilities.map((a: { ability: { name: string } }) => a.ability.name),
-            image: detail.sprites.front_default || detail.sprites.other['official-artwork'].front_default,
-            description: description,
-            height: detail.height,
-            weight: detail.weight
-          };
-        })
-      );
-      
-      pokemons.push(...batchDetails);
-      
-      // Delay para não sobrecarregar API
-      if (i + batchSize < data.results.length) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-    }
+        return {
+          id: detail.id,
+          name: detail.name,
+          types: types,
+          abilities: detail.abilities.map((a: { ability: { name: string } }) => a.ability.name),
+          image: detail.sprites.front_default || detail.sprites.other['official-artwork'].front_default,
+          description: description,
+          height: detail.height,
+          weight: detail.weight
+        };
+      })
+    );
 
     res.json({
-      pokemons,
+      pokemons: batchDetails,
       total: data.count,
       page,
       limit
@@ -211,59 +198,46 @@ app.get('/api/type/:type', async (req, res) => {
     
     console.log(`Type '${typeName}' has ${pokemonList.length} Pokémon (showing ${pokemonList.length})`);
     
-    // Buscar detalhes EM LOTES DE 5
-    const pokemons = [];
-    const batchSize = 5;
-    
-    for (let i = 0; i < pokemonList.length; i += batchSize) {
-      const batch = pokemonList.slice(i, i + batchSize);
-      
-      const batchDetails = await Promise.all(
-        batch.map(async (pokemon: { id: number; name: string; url: string }) => {
-          const detailResponse = await fetch(pokemon.url);
-          const detail = await detailResponse.json();
-          
-          // Buscar dados da espécie para descrição
-          const speciesResponse = await fetch(detail.species.url);
-          const species = await speciesResponse.json();
-          
-          // Obter descrição em inglês
-          let description = 'Description not available';
-          const enEntry = species.flavor_text_entries.find(
-            (entry: { language: { name: string } }) => entry.language.name === 'en'
-          );
-          
-          if (enEntry) {
-            description = enEntry.flavor_text.replace(/[\n\f]/g, ' ');
-          }
+    // Buscar detalhes EM PARALELO (lote único de 20)
+    const batchDetails = await Promise.all(
+      pokemonList.map(async (pokemon: { id: number; name: string; url: string }) => {
+        const [detailResponse, speciesResponse] = await Promise.all([
+          fetch(pokemon.url),
+          fetch(pokemon.url.replace('/pokemon/', '/pokemon-species/').replace(/\/\d+\/$/, '/'))
+        ]);
+        
+        const detail = await detailResponse.json();
+        const species = await speciesResponse.json();
+        
+        // Obter descrição em inglês
+        let description = 'Description not available';
+        const enEntry = species.flavor_text_entries.find(
+          (entry: { language: { name: string } }) => entry.language.name === 'en'
+        );
+        
+        if (enEntry) {
+          description = enEntry.flavor_text.replace(/[\n\f]/g, ' ');
+        }
 
-          // Manter tipos em inglês (original da API)
-          const types = detail.types.map((t: { type: { name: string } }) => t.type.name);
+        // Manter tipos em inglês (original da API)
+        const types = detail.types.map((t: { type: { name: string } }) => t.type.name);
 
-          return {
-            id: detail.id,
-            name: detail.name,
-            types: types,
-            abilities: detail.abilities.map((a: { ability: { name: string } }) => a.ability.name),
-            image: detail.sprites.front_default || detail.sprites.other['official-artwork'].front_default,
-            description: description,
-            height: detail.height,
-            weight: detail.weight
-          };
-        })
-      );
-      
-      pokemons.push(...batchDetails);
-      
-      // Delay para não sobrecarregar API
-      if (i + batchSize < pokemonList.length) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-    }
+        return {
+          id: detail.id,
+          name: detail.name,
+          types: types,
+          abilities: detail.abilities.map((a: { ability: { name: string } }) => a.ability.name),
+          image: detail.sprites.front_default || detail.sprites.other['official-artwork'].front_default,
+          description: description,
+          height: detail.height,
+          weight: detail.weight
+        };
+      })
+    );
 
     res.json({
-      pokemons: pokemons,
-      total: pokemons.length,
+      pokemons: batchDetails,
+      total: batchDetails.length,
       type: typeName,
       isTypeFilter: true
     });
@@ -284,57 +258,46 @@ app.get('/api/search', async (req, res) => {
     // Filtra pelo nome
     const matches = allPokemonNamesList.filter(p => p.name.includes(query)).slice(0, 20);
     
-    // Busca detalhes em lotes de 5
-    const pokemons = [];
-    const batchSize = 5;
-    
-    for (let i = 0; i < matches.length; i += batchSize) {
-      const batch = matches.slice(i, i + batchSize);
-      
-      const batchDetails = await Promise.all(
-        batch.map(async (pokemon) => {
-          try {
-            const detailResponse = await fetch(pokemon.url);
-            if (!detailResponse.ok) return null;
-            const detail = await detailResponse.json();
-            
-            const speciesResponse = await fetch(detail.species.url);
-            const species = await speciesResponse.json();
-            
-            let description = 'Description not available';
-            const enEntry = species.flavor_text_entries.find(
-              (entry: { language: { name: string } }) => entry.language.name === 'en'
-            );
-            
-            if (enEntry) {
-              description = enEntry.flavor_text.replace(/[\n\f]/g, ' ');
-            }
-
-            const types = detail.types.map((t: any) => t.type.name);
-
-            return {
-              id: detail.id,
-              name: detail.name,
-              types: types,
-              abilities: detail.abilities.map((a: any) => a.ability.name),
-              image: detail.sprites.front_default || detail.sprites.other['official-artwork'].front_default,
-              description: description,
-              height: detail.height,
-              weight: detail.weight
-            };
-          } catch (err) {
-            console.error(`Error loading search detail for ${pokemon.name}:`, err);
-            return null;
+    // Busca detalhes EM PARALELO (lote único de 20)
+    const pokemons = (await Promise.all(
+      matches.map(async (pokemon) => {
+        try {
+          const [detailResponse, speciesResponse] = await Promise.all([
+            fetch(pokemon.url),
+            fetch(pokemon.url.replace('/pokemon/', '/pokemon-species/').replace(/\/\d+\/$/, '/'))
+          ]);
+          
+          if (!detailResponse.ok) return null;
+          const detail = await detailResponse.json();
+          const species = await speciesResponse.json();
+          
+          let description = 'Description not available';
+          const enEntry = species.flavor_text_entries.find(
+            (entry: { language: { name: string } }) => entry.language.name === 'en'
+          );
+          
+          if (enEntry) {
+            description = enEntry.flavor_text.replace(/[\n\f]/g, ' ');
           }
-        })
-      );
-      
-      pokemons.push(...batchDetails.filter(p => p !== null));
-      
-      if (i + batchSize < matches.length) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-    }
+
+          const types = detail.types.map((t: any) => t.type.name);
+
+          return {
+            id: detail.id,
+            name: detail.name,
+            types: types,
+            abilities: detail.abilities.map((a: any) => a.ability.name),
+            image: detail.sprites.front_default || detail.sprites.other['official-artwork'].front_default,
+            description: description,
+            height: detail.height,
+            weight: detail.weight
+          };
+        } catch (err) {
+          console.error(`Error loading search detail for ${pokemon.name}:`, err);
+          return null;
+        }
+      })
+    )).filter(p => p !== null);
 
     res.json({ pokemons });
   } catch (error) {
