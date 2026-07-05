@@ -462,7 +462,8 @@ h1 {
   text-align: center;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
-
+ 
+/*id numeração pokemon*/
 .pokemon-id {
   font-family: 'Press Start 2P', cursive;
   font-size: 11px;
@@ -940,12 +941,8 @@ h1 {
   text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
-.pokemon-id {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.9rem;
-  color: var(--pokemon-yellow);
-  text-shadow: 0 0 10px var(--pokemon-yellow);
-}
+
+
 
 .modal-body {
   padding: 35px;
