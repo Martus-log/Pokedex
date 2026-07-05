@@ -104,7 +104,7 @@ const modal = document.getElementById('pokemonModal');
 
 /**
  * Carrega um lote de 20 Pokémon da geração atual
- * Usa o backend como proxy para evitar chamadas simultâneas excessivas
+ * Mostra skeleton loading e atualiza conforme cada lote chega
  */
 async function loadPokemonPage() {
   if (generationState.isLoading) return;
@@ -120,8 +120,15 @@ async function loadPokemonPage() {
     return;
   }
   
+  // Mostra skeletons imediatamente
   loadingDiv.style.display = 'block';
-    loadingDiv.innerHTML = `<p>Carregando ${generationState.loadedCount + 1} a ${Math.min(generationState.loadedCount + limit, genData.limit)}...</p>`;
+  loadingDiv.innerHTML = `<p>Carregando ${generationState.loadedCount + 1} a ${Math.min(generationState.loadedCount + limit, genData.limit)}...</p>`;
+  
+  // Renderiza skeletons para os novos cards
+  for (let i = 0; i < limit; i++) {
+    const skeleton = createSkeletonCard(generationState.loadedCount + i);
+    pokedexGrid.appendChild(skeleton);
+  }
   
   try {
     // Usa o backend como proxy - 1 chamada apenas
@@ -139,15 +146,18 @@ async function loadPokemonPage() {
       throw new Error('No Pokémon returned');
     }
     
-    // Adiciona apenas se não estiver na lista para evitar duplicatas (backend já fez o batch loading)
-        const newUniquePokemons = newPokemons.filter(p => !allPokemons.some(existing => existing.id === p.id));
-        allPokemons.push(...newUniquePokemons);
-        filteredPokemons = [...allPokemons];
-        allPokemonsList = [...allPokemons];
+    // Adiciona apenas se não estiver na lista para evitar duplicatas
+    const newUniquePokemons = newPokemons.filter(p => !allPokemons.some(existing => existing.id === p.id));
+    allPokemons.push(...newUniquePokemons);
+    filteredPokemons = [...allPokemons];
+    allPokemonsList = [...allPokemons];
     
-        // Renderiza apenas os novos cards (append)
-        const newCardsCount = allPokemons.length - (generationState.loadedCount || 0);
-        appendPokemons(newUniquePokemons, generationState.loadedCount);
+    // Substitui skeletons pelos cards reais UM POR UM com pequeno delay
+    for (let i = 0; i < newUniquePokemons.length; i++) {
+      setTimeout(() => {
+        replaceSkeleton(generationState.loadedCount + i, newUniquePokemons[i]);
+      }, i * 50); // 50ms entre cada card para efeito cascata
+    }
     
     // Atualiza estado
     generationState.loadedCount += newPokemons.length;
@@ -157,16 +167,18 @@ async function loadPokemonPage() {
     loadingDiv.innerHTML = `<p>Carregados ${generationState.loadedCount}/${genData.limit}</p>`;
     
     // Verifica se carregou todos
-    if (generationState.loadedCount >= genData.limit) {
-      loadMoreButton.style.display = 'none';
-      loadingDiv.style.display = 'none';
-    } else {
-      loadMoreButton.style.display = 'block';
-      loadingDiv.style.display = 'none';
-    }
-    
-    // Atualiza banner
-    updateGenerationBanner();
+    setTimeout(() => {
+      if (generationState.loadedCount >= genData.limit) {
+        loadMoreButton.style.display = 'none';
+        loadingDiv.style.display = 'none';
+      } else {
+        loadMoreButton.style.display = 'block';
+        loadingDiv.style.display = 'none';
+      }
+      
+      // Atualiza banner
+      updateGenerationBanner();
+    }, newUniquePokemons.length * 50 + 100);
     
   } catch (error) {
     console.error('Error loading Pokémon:', error);
@@ -296,6 +308,43 @@ function appendPokemons(pokemons, startIndex = 0) {
     const card = createPokemonCard(pokemon, startIndex + index);
     pokedexGrid.appendChild(card);
   });
+}
+
+// Create skeleton loading card
+function createSkeletonCard(index = 0) {
+  const card = document.createElement('div');
+  card.className = 'skeleton-card';
+  card.style.animationDelay = `${index * 0.05}s`;
+  card.innerHTML = `
+    <div class="skeleton-image"></div>
+    <div class="skeleton-info">
+      <div class="skeleton-id"></div>
+      <div class="skeleton-name"></div>
+      <div class="skeleton-types">
+        <div class="skeleton-type"></div>
+        <div class="skeleton-type"></div>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+// Render skeleton loading cards
+function renderSkeletons(count = 20) {
+  pokedexGrid.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const skeleton = createSkeletonCard(i);
+    pokedexGrid.appendChild(skeleton);
+  }
+}
+
+// Replace skeleton with real card
+function replaceSkeleton(index, pokemon) {
+  const skeleton = pokedexGrid.children[index];
+  if (skeleton && skeleton.classList.contains('skeleton-card')) {
+    const card = createPokemonCard(pokemon, index);
+    pokedexGrid.replaceChild(card, skeleton);
+  }
 }
 
 // Type colors for card backgrounds

@@ -172,6 +172,10 @@ app.get('/api/pokemons', async (req, res) => {
       
       pokemons.push(...batchDetails);
       
+      // Delay reduzido para não sobrecarregar API (100ms)
+      if (i + batchSize < data.results.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
 
     res.json({
@@ -251,6 +255,10 @@ app.get('/api/type/:type', async (req, res) => {
       
       pokemons.push(...batchDetails);
       
+      // Delay reduzido para não sobrecarregar API (100ms)
+      if (i + batchSize < pokemonList.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
 
     res.json({
@@ -322,6 +330,11 @@ app.get('/api/search', async (req, res) => {
       );
       
       pokemons.push(...batchDetails.filter(p => p !== null));
+      
+      // Delay reduzido para não sobrecarregar API (100ms)
+      if (i + batchSize < matches.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
 
     res.json({ pokemons });
