@@ -4,6 +4,21 @@ import path from 'path';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Cache em memória para busca global de Pokémon
+let allPokemonNamesList: { name: string; url: string }[] = [];
+
+async function loadAllPokemonNames() {
+  try {
+    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=2000');
+    const data = await response.json();
+    allPokemonNamesList = data.results || [];
+    console.log(`Loaded ${allPokemonNamesList.length} Pokemon names for search cache`);
+  } catch (err) {
+    console.error('Failed to load Pokemon names list:', err);
+  }
+}
+loadAllPokemonNames();
+
 // Servir arquivos estáticos da pasta public
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -255,6 +270,76 @@ app.get('/api/type/:type', async (req, res) => {
   } catch (error) {
     console.error(`Error fetching type ${typeName}:`, error);
     res.status(500).json({ error: `Error fetching type data from PokéAPI: ${error}` });
+  }
+});
+
+// Endpoint de busca global utilizando cache
+app.get('/api/search', async (req, res) => {
+  const query = (req.query.q as string || '').toLowerCase().trim();
+  if (!query) {
+    return res.json({ pokemons: [] });
+  }
+
+  try {
+    // Filtra pelo nome
+    const matches = allPokemonNamesList.filter(p => p.name.includes(query)).slice(0, 20);
+    
+    // Busca detalhes em lotes de 5
+    const pokemons = [];
+    const batchSize = 5;
+    
+    for (let i = 0; i < matches.length; i += batchSize) {
+      const batch = matches.slice(i, i + batchSize);
+      
+      const batchDetails = await Promise.all(
+        batch.map(async (pokemon) => {
+          try {
+            const detailResponse = await fetch(pokemon.url);
+            if (!detailResponse.ok) return null;
+            const detail = await detailResponse.json();
+            
+            const speciesResponse = await fetch(detail.species.url);
+            const species = await speciesResponse.json();
+            
+            let description = 'Description not available';
+            const enEntry = species.flavor_text_entries.find(
+              (entry: { language: { name: string } }) => entry.language.name === 'en'
+            );
+            
+            if (enEntry) {
+              description = enEntry.flavor_text.replace(/[\n\f]/g, ' ');
+            }
+
+            const types = detail.types.map((t: any) => t.type.name);
+
+            return {
+              id: detail.id,
+              name: detail.name,
+              types: types,
+              abilities: detail.abilities.map((a: any) => a.ability.name),
+              image: detail.sprites.front_default || detail.sprites.other['official-artwork'].front_default,
+              description: description,
+              height: detail.height,
+              weight: detail.weight
+            };
+          } catch (err) {
+            console.error(`Error loading search detail for ${pokemon.name}:`, err);
+            return null;
+          }
+        })
+      );
+      
+      pokemons.push(...batchDetails.filter(p => p !== null));
+      
+      if (i + batchSize < matches.length) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+    }
+
+    res.json({ pokemons });
+  } catch (error) {
+    console.error('Error in global search:', error);
+    res.status(500).json({ error: 'Search failed' });
   }
 });
 

@@ -138,8 +138,9 @@ async function loadPokemonPage() {
       throw new Error('No Pokémon returned');
     }
     
-    // Adiciona todos de uma vez (backend já fez o batch loading)
-    allPokemons.push(...newPokemons);
+    // Adiciona apenas se não estiver na lista para evitar duplicatas (backend já fez o batch loading)
+    const newUniquePokemons = newPokemons.filter(p => !allPokemons.some(existing => existing.id === p.id));
+    allPokemons.push(...newUniquePokemons);
     filteredPokemons = [...allPokemons];
     allPokemonsList = [...allPokemons];
     
@@ -182,6 +183,12 @@ async function loadGeneration(gen) {
   
   const genData = generationData[gen];
   if (!genData) return;
+  
+  // Sincroniza o select dropdown se existir
+  const generationSelect = document.getElementById('generationSelect');
+  if (generationSelect && generationSelect.value !== gen) {
+    generationSelect.value = gen;
+  }
   
   // Reseta estado
   generationState = {
@@ -486,6 +493,7 @@ function setupModalCloseListener() {
 function setupSearchListener() {
   const searchCloseBtn = document.getElementById('searchCloseBtn');
   const filterNameBtn = document.getElementById('filterNameBtn');
+  let searchTimeout = null;
   
   if (filterNameBtn) {
     filterNameBtn.addEventListener('click', () => {
@@ -514,7 +522,11 @@ function setupSearchListener() {
   
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase();
+      const query = e.target.value.toLowerCase().trim();
+      
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
       
       if (query.length === 0) {
         filteredPokemons = [...allPokemons];
@@ -523,12 +535,26 @@ function setupSearchListener() {
         return;
       }
       
-      filteredPokemons = allPokemons.filter(p => 
-        p.name.toLowerCase().includes(query) ||
-        p.types.some(t => t.toLowerCase().includes(query) || typeToPortuguese[t]?.toLowerCase().includes(query))
-      );
-      
-      renderSearchResults(filteredPokemons, query);
+      searchTimeout = setTimeout(async () => {
+        try {
+          loadingDiv.style.display = 'block';
+          loadingDiv.innerHTML = '<p>Buscando Pokémon...</p>';
+          
+          const response = await fetch(`/api/search?q=${query}`);
+          if (!response.ok) throw new Error('Search failed');
+          
+          const data = await response.json();
+          filteredPokemons = data.pokemons || [];
+          
+          renderSearchResults(filteredPokemons, query);
+        } catch (err) {
+          console.error('Error fetching search results:', err);
+          filteredPokemons = [];
+          renderSearchResults(filteredPokemons, query);
+        } finally {
+          loadingDiv.style.display = 'none';
+        }
+      }, 300);
     });
   }
 }
@@ -651,7 +677,7 @@ async function loadPokemonsByType(typeNameEnglish) {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM ready - initializing Pokédex');
   setupGenerationSelector();
-  loadGeneration('1'); // Carrega Gen 1 por padrão (apenas 20 inicialmente)
+  loadGeneration('all'); // Carrega todas as gerações por padrão
   setupSearchListener();
   setupModalCloseListener();
   setupFloatingActions();
