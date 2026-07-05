@@ -229,15 +229,15 @@ async function loadGeneration(gen) {
 
 /**
  * Atualiza o banner da geração com contagem atual
- */
-function updateGenerationBanner() {
-  const existingBanner = pokedexGrid.previousElementSibling;
-  if (existingBanner && existingBanner.classList && existingBanner.classList.contains('generation-banner')) {
-    const genData = generationData[generationState.currentGen];
-    existingBanner.querySelector('p').textContent = 
-      `${genData.name}: ${generationState.loadedCount}/${genData.limit} Pokémon`;
-  }
-}
+ // Atualiza o banner da geração com contagem atual
+ function updateGenerationBanner() {
+   const existingBanner = pokedexGrid.previousElementSibling;
+   if (existingBanner && existingBanner.classList && existingBanner.classList.contains('generation-banner')) {
+     const genData = generationData[generationState.currentGen];
+     existingBanner.querySelector('p').textContent = 
+       `${genData.name}: ${generationState.loadedCount}/${genData.limit}`;
+   }
+ }
 
 /**
  * Remove banners existentes
