@@ -90,9 +90,57 @@ app.get('/api/pokemon/:id', async (req, res) => {
     
     const evolutionChain = processEvoChain(evoChain.chain);
     
-    res.json({
-      id: detail.id,
-      name: detail.name,
+        // Buscar Mega Evoluções para esta espécie
+                let megaEvolutions: any[] = [];
+                try {
+                  // Filtrar formas mega (inclui mega-x, mega-y, mega, mas exclui gmax)
+                  const megaVarieties = (species.varieties || []).filter((v: any) => {
+                    const name = v.pokemon.name;
+                    return name.includes('-mega') && !name.includes('-gmax');
+                  });
+      
+          for (const variety of megaVarieties) {
+                      try {
+                        const megaResponse = await fetch(variety.pokemon.url);
+                        if (megaResponse.ok) {
+                          const megaData = await megaResponse.json();
+                          let megaType = 'MEGA';
+                          let displayName = '';
+                
+                          if (megaData.name.includes('-mega-x')) {
+                            megaType = 'MEGA X';
+                            displayName = megaData.name.replace('-mega-x', '').toUpperCase() + ' MEGA X';
+                          } else if (megaData.name.includes('-mega-y')) {
+                            megaType = 'MEGA Y';
+                            displayName = megaData.name.replace('-mega-y', '').toUpperCase() + ' MEGA Y';
+                          } else {
+                            megaType = 'MEGA';
+                            displayName = megaData.name.replace('-mega', '').toUpperCase() + ' MEGA';
+                          }
+                
+                          megaEvolutions.push({
+                            name: megaData.name,
+                            displayName: displayName,
+                            megaType: megaType,
+                            isMega: true,
+                            id: megaData.id,
+                            types: megaData.types.map((t: any) => t.type.name),
+                            image: megaData.sprites.front_default || megaData.sprites.other['official-artwork'].front_default,
+                            abilities: megaData.abilities.map((a: any) => a.ability.name)
+                          });
+                        }
+                      } catch (err) {
+                        console.error(`Error loading mega ${variety.pokemon.name}:`, err);
+                      }
+                    }
+        } catch (err) {
+          console.error('Error in mega evolution block:', err);
+          megaEvolutions = [];
+        }
+    
+        res.json({
+          id: detail.id,
+          name: detail.name,
       types: types,
       abilities: detail.abilities.map((a: { ability: { name: string } }) => a.ability.name),
       image: detail.sprites.other['official-artwork'].front_default || detail.sprites.front_default,
@@ -103,17 +151,17 @@ app.get('/api/pokemon/:id', async (req, res) => {
         name: s.stat.name,
         value: s.base_stat
       })),
-      evolutionChain
+      evolutionChain,
+      megaEvolutions
     });
   } catch (error) {
     console.error('Error fetching Pokémon details:', error);
     res.status(500).json({ error: 'Error fetching data from PokéAPI' });
   }
 });
-
 // API endpoint para buscar Pokémon com paginação (máximo 20 por vez)
 app.get('/api/pokemons', async (req, res) => {
-  const limit = Math.min(parseInt(req.query.limit as string) || 20, 20); // Máximo 20
+  const limit = Math.min(parseInt(req.query.limit as string) || 20, 20);
   let offset = 0;
   let page = 1;
   if (req.query.offset !== undefined) {
@@ -128,7 +176,6 @@ app.get('/api/pokemons', async (req, res) => {
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`);
     const data = await response.json();
 
-    // Buscar detalhes de cada Pokémon EM LOTES DE 5
     const pokemons = [];
     const batchSize = 5;
     
@@ -140,11 +187,9 @@ app.get('/api/pokemons', async (req, res) => {
           const detailResponse = await fetch(pokemon.url);
           const detail = await detailResponse.json();
           
-          // Buscar dados da espécie para descrição
           const speciesResponse = await fetch(detail.species.url);
           const species = await speciesResponse.json();
           
-          // Obter descrição em inglês
           let description = 'Description not available';
           const enEntry = species.flavor_text_entries.find(
             (entry: { language: { name: string } }) => entry.language.name === 'en'
@@ -154,7 +199,6 @@ app.get('/api/pokemons', async (req, res) => {
             description = enEntry.flavor_text.replace(/[\n\f]/g, ' ');
           }
 
-          // Manter tipos em inglês (original da API)
           const types = detail.types.map((t: { type: { name: string } }) => t.type.name);
 
           return {
@@ -172,7 +216,6 @@ app.get('/api/pokemons', async (req, res) => {
       
       pokemons.push(...batchDetails);
       
-      // Delay reduzido para não sobrecarregar API (100ms)
       if (i + batchSize < data.results.length) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -195,23 +238,18 @@ app.get('/api/type/:type', async (req, res) => {
   const typeName = req.params.type.toLowerCase();
   
   try {
-    // Buscar dados do tipo diretamente da PokéAPI
     const typeResponse = await fetch(`https://pokeapi.co/api/v2/type/${typeName}`);
     if (!typeResponse.ok) {
       return res.status(404).json({ error: `Type '${typeName}' not found` });
     }
     const typeData = await typeResponse.json();
     
-    // Extrair lista de Pokémon deste tipo (limitar a 20)
     const pokemonList = typeData.pokemon.slice(0, 20).map((entry: any) => ({
       id: parseInt(entry.pokemon.url.replace(/.*\/(\d+)\/$/, '$1')),
       name: entry.pokemon.name,
       url: entry.pokemon.url
     }));
     
-    console.log(`Type '${typeName}' has ${pokemonList.length} Pokémon (showing ${pokemonList.length})`);
-    
-    // Buscar detalhes EM LOTES DE 5
     const pokemons = [];
     const batchSize = 5;
     
@@ -223,11 +261,9 @@ app.get('/api/type/:type', async (req, res) => {
           const detailResponse = await fetch(pokemon.url);
           const detail = await detailResponse.json();
           
-          // Buscar dados da espécie para descrição
           const speciesResponse = await fetch(detail.species.url);
           const species = await speciesResponse.json();
           
-          // Obter descrição em inglês
           let description = 'Description not available';
           const enEntry = species.flavor_text_entries.find(
             (entry: { language: { name: string } }) => entry.language.name === 'en'
@@ -237,7 +273,6 @@ app.get('/api/type/:type', async (req, res) => {
             description = enEntry.flavor_text.replace(/[\n\f]/g, ' ');
           }
 
-          // Manter tipos em inglês (original da API)
           const types = detail.types.map((t: { type: { name: string } }) => t.type.name);
 
           return {
@@ -255,7 +290,6 @@ app.get('/api/type/:type', async (req, res) => {
       
       pokemons.push(...batchDetails);
       
-      // Delay reduzido para não sobrecarregar API (100ms)
       if (i + batchSize < pokemonList.length) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -281,10 +315,8 @@ app.get('/api/search', async (req, res) => {
   }
 
   try {
-    // Filtra pelo nome
     const matches = allPokemonNamesList.filter(p => p.name.includes(query)).slice(0, 20);
     
-    // Busca detalhes em lotes de 5
     const pokemons = [];
     const batchSize = 5;
     
@@ -331,7 +363,6 @@ app.get('/api/search', async (req, res) => {
       
       pokemons.push(...batchDetails.filter(p => p !== null));
       
-      // Delay reduzido para não sobrecarregar API (100ms)
       if (i + batchSize < matches.length) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }

@@ -511,6 +511,15 @@ async function openModal(pokemon) {
     // Cadeia evolutiva
     renderEvolutionChain(details.evolutionChain, details.id);
     
+    // Mega Evoluções
+    if (details.megaEvolutions && details.megaEvolutions.length > 0) {
+      renderMegaEvolutions(details.megaEvolutions);
+    } else {
+      // Hide mega section if none exist
+      const megaSection = document.getElementById('megaEvolutionsSection');
+      if (megaSection) megaSection.style.display = 'none';
+    }
+    
     // Show modal
     modal.style.display = 'flex';
     modal.setAttribute('aria-hidden', 'false');
@@ -580,6 +589,53 @@ function renderEvolutionChain(chain, currentPokemonId) {
   
   container.appendChild(chainContainer);
 }
+
+// Render Mega Evolutions
+function renderMegaEvolutions(megaEvolutions) {
+  const container = document.getElementById('megaEvolutionsSection');
+  if (!container) return;
+  
+  container.style.display = 'block';
+  const chainContainer = document.getElementById('megaEvolutionChain');
+  if (!chainContainer) return;
+  
+  chainContainer.innerHTML = '';
+  
+  megaEvolutions.forEach(mega => {
+    const stageDiv = document.createElement('div');
+    stageDiv.className = 'evo-stage mega';
+    
+    const typeClass = mega.types.map(t => `type-${t}`).join(' ');
+    const typeNamesPT = mega.types.map(t => typeToPortuguese[t] || t).map(t => capitalizeFirst(t)).join(' / ');
+    
+    stageDiv.innerHTML = `
+      <div class="evo-image-container">
+        <img src="${mega.image}" alt="${mega.name}" class="evo-image" onclick="openModalFromMega('${mega.name}', ${mega.id})">
+      </div>
+      <div class="evo-info">
+        <p class="poke-name">${mega.displayName}</p>
+        <div class="type-badges-container">
+          ${mega.types.map(t => {
+            const enType = t;
+            const ptType = capitalizeFirst(typeToPortuguese[enType] || enType);
+            return `<span class="type-badge ${typeToClass[ptType] || 'type-' + enType}">${ptType}</span>`;
+          }).join('')}
+        </div>
+        <span class="mega-type-badge">MEGA</span>
+      </div>
+    `;
+    
+    chainContainer.appendChild(stageDiv);
+  });
+}
+
+// Open modal from mega evolution click
+function openModalFromMega(name, id) {
+  // For now, just show a message - full implementation would need API endpoint
+  console.log('Opening mega:', name, id);
+  // Could fetch mega details and show in modal
+}
+
 
 // Open modal from evolution chain click
 async function openModalFromChain(pokemonId) {
