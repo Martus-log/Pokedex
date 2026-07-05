@@ -7,8 +7,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Pokédex</title>
-  <link rel="stylesheet" href="style.css?v=24">
-  <link rel="stylesheet" href="stats-evolution.css?v=24">
+  <link rel="stylesheet" href="style.css?v=30">
+    <link rel="stylesheet" href="stats-evolution.css?v=30">
 </head>
 <body>
   <div class="container">
@@ -154,47 +154,25 @@
   </div>
 
   <!-- Modal for Pokémon details -->
-  <div id="pokemonModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal()" aria-label="Fechar modal">&times;</button>
-      <div class="modal-header">
-        <img id="modalImage" src="" alt="">
-        <div class="modal-info">
-          <h2 id="modalTitle"></h2>
-          <p id="modalId" class="pokemon-id"></p>
-        </div>
-      </div>
-      <div class="modal-body">
-        <div id="modalBodyContent">
-          <!-- Evolution Chain -->
-          <div class="modal-section evolution-section">
-            <h3>Cadeia Evolutiva</h3>
-            <div id="evolutionChain" class="evolution-chain">
-              <!-- Evolutions will be inserted here -->
-            </div>
-          </div>
-          
-          <!-- Description -->
-          <div class="modal-section">
-            <h3>Descrição</h3>
-            <p id="modalDescription"></p>
-          </div>
-          
-          <!-- Types -->
-          <div class="modal-section">
-            <h3>Tipos</h3>
+    <div id="pokemonModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()" aria-label="Fechar modal">&times;</button>
+      
+        <!-- Header do Modal (fundo colorido) -->
+        <div class="modal-header-colored" id="modalHeaderColored">
+          <img id="modalImage" src="" alt="" class="modal-sprite-large">
+          <div class="modal-header-info">
+            <h2 id="modalTitle"></h2>
+            <p id="modalId" class="pokemon-id"></p>
             <div id="modalTypes" class="types-container"></div>
           </div>
-          
-          <!-- Abilities -->
-          <div class="modal-section">
-            <h3>Habilidades</h3>
-            <div id="modalAbilities" class="abilities-container"></div>
-          </div>
-          
-          <!-- Stats Bars -->
+        </div>
+      
+        <!-- Corpo do Modal (scrollável) -->
+        <div class="modal-body-scrollable">
+          <!-- Estatísticas Base -->
           <div class="modal-section stats-section">
-            <h3>Status Base</h3>
+            <h3 class="section-title">Estatísticas Base</h3>
             <div id="statsBars" class="stats-bars">
               <!-- Stat bars will be inserted here -->
             </div>
@@ -203,8 +181,28 @@
               <span id="statsTotal">0</span>
             </div>
           </div>
-          
-          <!-- Height and Weight -->
+        
+          <!-- Cadeia Evolutiva -->
+          <div class="modal-section evolution-section">
+            <h3 class="section-title">Cadeia Evolutiva</h3>
+            <div id="evolutionChain" class="evolution-chain">
+              <!-- Evolutions will be inserted here -->
+            </div>
+          </div>
+        
+          <!-- Habilidades -->
+          <div class="modal-section abilities-section">
+            <h3 class="section-title">Habilidades</h3>
+            <div id="modalAbilities" class="abilities-container"></div>
+          </div>
+        
+          <!-- Descrição -->
+          <div class="modal-section description-section">
+            <h3 class="section-title">Descrição</h3>
+            <p id="modalDescription"></p>
+          </div>
+        
+          <!-- Altura e Peso -->
           <div class="modal-section physical-stats">
             <div class="physical-stat">
               <span class="stat-icon">📏</span>
@@ -220,8 +218,7 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <script src="script.js?v=27"></script>
+  <script src="script.js?v=30"></script>
 </body>
 </html>

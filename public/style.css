@@ -709,12 +709,12 @@ h1 {
 }
 
 .modal-content {
-  background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+  background: #ffffff;
   border-radius: 25px;
   max-width: 650px;
-  width: 90%;
+  width: 95%;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden;
   position: relative;
   animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border: 5px solid var(--pokedex-red);
@@ -727,55 +727,129 @@ h1 {
   right: 20px;
   font-size: 35px;
   font-weight: bold;
-  color: var(--pokedex-red);
+  color: white;
   cursor: pointer;
   background: none;
   border: none;
   transition: all 0.3s;
-  z-index: 10;
+  z-index: 100;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .modal-close:hover {
-  color: var(--pokedex-dark-red);
   transform: rotate(90deg) scale(1.2);
+  color: #fff;
 }
 
-.modal-header {
+/* Header Colorido do Modal */
+.modal-header-colored {
+  padding: 40px 30px 30px;
   display: flex;
   align-items: center;
-  padding: 35px;
-  background: linear-gradient(135deg, var(--pokedex-red) 0%, var(--pokedex-dark-red) 100%);
-  color: white;
-  border-radius: 20px 20px 0 0;
+  gap: 25px;
   position: relative;
   overflow: hidden;
 }
 
-.modal-header::before {
+.modal-header-colored::before {
   content: '';
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
   animation: rotate 20s linear infinite;
+  pointer-events: none;
 }
 
 @keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-.modal-header img {
-  width: 140px;
-  height: 140px;
+.modal-sprite-large {
+  width: 160px;
+  height: 160px;
   object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4));
+  animation: float 3s ease-in-out infinite;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.modal-header-info {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+}
+
+.modal-header-info h2 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 22px;
+  color: white;
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+  margin-bottom: 8px;
+  text-transform: capitalize;
+}
+
+.modal-header-info .pokemon-id {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 12px;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 12px;
+}
+
+.modal-header-info .types-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Corpo Scrollável do Modal */
+.modal-body-scrollable {
+  max-height: calc(90vh - 250px);
+  overflow-y: auto;
+  padding: 25px 30px 30px;
+  background: #ffffff;
+}
+
+.modal-body-scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-thumb {
+  background: var(--pokedex-blue);
+  border-radius: 10px;
+}
+
+.modal-body-scrollable::-webkit-scrollbar-thumb:hover {
+  background: var(--pokedex-dark-red);
+}
+
+/* Títulos das Seções */
+.section-title {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 12px;
+  color: var(--pokedex-blue);
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid var(--pokemon-yellow);
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
   margin-right: 25px;
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
   animation: float 3s ease-in-out infinite;

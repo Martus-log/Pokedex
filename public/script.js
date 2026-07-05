@@ -363,34 +363,39 @@ async function openModal(pokemon) {
     
     const details = await response.json();
     
-    // Preenche modal
+    // Atualiza header colorido com base no tipo principal
+    const primaryType = details.types[0];
+    const typeColor = typeColors[primaryType] || '#AAA67F';
+    const modalHeader = document.getElementById('modalHeaderColored');
+    modalHeader.style.background = `linear-gradient(135deg, ${typeColor} 0%, ${adjustColor(typeColor, -20)} 100%)`;
+    
+    // Atualiza botão de fechar para ser visível no fundo colorido
+    const closeBtn = document.querySelector('.modal-close');
+    closeBtn.style.color = 'white';
+    
+    // Preenche header do modal
     document.getElementById('modalImage').src = details.image;
     document.getElementById('modalImage').alt = details.name;
     document.getElementById('modalTitle').textContent = capitalizeFirst(details.name);
     document.getElementById('modalId').textContent = `#${String(details.id).padStart(3, '0')}`;
-    document.getElementById('modalDescription').textContent = details.description;
-    document.getElementById('modalHeight').textContent = `${(details.height / 10).toFixed(1)} m`;
-    document.getElementById('modalWeight').textContent = `${(details.weight / 10).toFixed(1)} kg`;
     
-    // Types
+    // Types badges no header
     const typesPT = details.types.map(t => capitalizeFirst(typeToPortuguese[t] || t));
     document.getElementById('modalTypes').innerHTML = typesPT
-      .map(type => `<span class="type-badge ${typeToClass[type] || 'type-normal'}">${type}</span>`)
+      .map(type => {
+        const enType = portugueseToEnglish[type] || type.toLowerCase();
+        const cssClass = typeToClass[type] || `type-${enType}`;
+        return `<span class="type-badge ${cssClass}">${type}</span>`;
+      })
       .join('');
     
-    // Abilities
-    const abilitiesPT = details.abilities.map(a => capitalizeFirst(a.replace(/-/g, ' ')));
-    document.getElementById('modalAbilities').innerHTML = abilitiesPT
-      .map(a => `<span class="ability-badge">${a}</span>`)
-      .join('');
-    
-    // Stats
+    // Stats com cores dinâmicas
     const statsContainer = document.getElementById('statsBars');
     statsContainer.innerHTML = '';
     let totalStats = 0;
     
     const statLabels = {
-      'hp': 'HP',
+      'hp': 'PS',
       'attack': 'Ataque',
       'defense': 'Defesa',
       'special-attack': 'Atq. Esp.',
@@ -403,11 +408,16 @@ async function openModal(pokemon) {
       const percentage = Math.min(100, (stat.value / 255) * 100);
       totalStats += stat.value;
       
+      // Determina cor baseada no valor do stat
+      let statColorClass = 'low';
+      if (stat.value >= 100) statColorClass = 'high';
+      else if (stat.value >= 60) statColorClass = 'medium';
+      
       statsContainer.innerHTML += `
         <div class="stat-bar-container">
           <span class="stat-label">${label}</span>
           <div class="stat-bar-wrapper">
-            <div class="stat-bar" style="width: ${percentage}%"></div>
+            <div class="stat-bar ${statColorClass}" style="width: ${percentage}%"></div>
           </div>
           <span class="stat-value">${stat.value}</span>
         </div>
@@ -416,8 +426,23 @@ async function openModal(pokemon) {
     
     document.getElementById('statsTotal').textContent = totalStats;
     
-    // Evolution chain
-    renderEvolutionChain(details.evolutionChain);
+    // Habilidades
+    const abilitiesPT = details.abilities.map(a => 
+      capitalizeFirst(a.replace(/-/g, ' '))
+    );
+    document.getElementById('modalAbilities').innerHTML = abilitiesPT
+      .map(a => `<span class="ability-badge">${a}</span>`)
+      .join('');
+    
+    // Descrição
+    document.getElementById('modalDescription').textContent = details.description;
+    
+    // Altura e Peso
+    document.getElementById('modalHeight').textContent = `${(details.height / 10).toFixed(1)} m`;
+    document.getElementById('modalWeight').textContent = `${(details.weight / 10).toFixed(1)} kg`;
+    
+    // Cadeia evolutiva
+    renderEvolutionChain(details.evolutionChain, details.id);
     
     // Show modal
     modal.style.display = 'flex';
@@ -430,13 +455,13 @@ async function openModal(pokemon) {
   }
 }
 
-// Render evolution chain
-function renderEvolutionChain(chain) {
+// Render evolution chain with level info and click to open
+function renderEvolutionChain(chain, currentPokemonId) {
   const container = document.getElementById('evolutionChain');
   container.innerHTML = '';
   
   if (!Array.isArray(chain) || chain.length === 0) {
-    container.innerHTML = '<p class="no-evo">Sem evoluções disponíveis</p>';
+    container.innerHTML = '<p class="no-evo" style="text-align:center;color:#888;">Sem evoluções disponíveis</p>';
     return;
   }
   
@@ -447,18 +472,38 @@ function renderEvolutionChain(chain) {
     const name = capitalizeFirst(evo.name);
     const url = evo.url;
     const id = url.match(/\/pokemon-species\/(\d+)\/$/)?.[1] || url.match(/\/pokemon\/(\d+)\/$/)?.[1] || '0';
+    const minLevel = evo.minLevel;
     
     const stageDiv = document.createElement('div');
-    stageDiv.className = 'evo-stage';
+    stageDiv.className = `evo-stage${id == currentPokemonId ? ' current' : ''}`;
+    stageDiv.setAttribute('data-pokemon-id', id);
     stageDiv.innerHTML = `
       <div class="evo-image-container">
         <img class="evo-image" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" alt="${name}">
       </div>
       <p class="evo-name">${name}</p>
+      <p class="evo-number">#${String(id).padStart(3, '0')}</p>
     `;
+    
+    // Clique para abrir modal do Pokémon
+    stageDiv.addEventListener('click', () => {
+      openModalFromChain(id);
+    });
+    
     chainContainer.appendChild(stageDiv);
     
-    if (index < chain.length - 1) {
+    // Seta e nível de evolução
+    if (index < chain.length - 1 && minLevel) {
+      const arrowSpan = document.createElement('span');
+      arrowSpan.className = 'evo-arrow';
+      arrowSpan.textContent = '→';
+      chainContainer.appendChild(arrowSpan);
+      
+      const levelDiv = document.createElement('div');
+      levelDiv.className = 'evo-level';
+      levelDiv.textContent = `Lv. ${minLevel}`;
+      chainContainer.appendChild(levelDiv);
+    } else if (index < chain.length - 1) {
       const arrowSpan = document.createElement('span');
       arrowSpan.className = 'evo-arrow';
       arrowSpan.textContent = '→';
@@ -469,11 +514,119 @@ function renderEvolutionChain(chain) {
   container.appendChild(chainContainer);
 }
 
+// Open modal from evolution chain click
+async function openModalFromChain(pokemonId) {
+  try {
+    const response = await fetch(`/api/pokemon/${pokemonId}`);
+    if (!response.ok) throw new Error('Failed to load details');
+    const details = await response.json();
+    openModalHelper(details);
+  } catch (error) {
+    console.error('Error loading evolution details:', error);
+  }
+}
+
+// Helper para abrir modal com dados já carregados
+function openModalHelper(details) {
+  // Atualiza header colorido com base no tipo principal
+  const primaryType = details.types[0];
+  const typeColor = typeColors[primaryType] || '#AAA67F';
+  const modalHeader = document.getElementById('modalHeaderColored');
+  modalHeader.style.background = `linear-gradient(135deg, ${typeColor} 0%, ${adjustColor(typeColor, -20)} 100%)`;
+  
+  // Atualiza botão de fechar
+  const closeBtn = document.querySelector('.modal-close');
+  closeBtn.style.color = 'white';
+  
+  // Preenche header do modal
+  document.getElementById('modalImage').src = details.image;
+  document.getElementById('modalImage').alt = details.name;
+  document.getElementById('modalTitle').textContent = capitalizeFirst(details.name);
+  document.getElementById('modalId').textContent = `#${String(details.id).padStart(3, '0')}`;
+  
+  // Types badges no header
+  const typesPT = details.types.map(t => capitalizeFirst(typeToPortuguese[t] || t));
+  document.getElementById('modalTypes').innerHTML = typesPT
+    .map(type => {
+      const enType = portugueseToEnglish[type] || type.toLowerCase();
+      const cssClass = typeToClass[type] || `type-${enType}`;
+      return `<span class="type-badge ${cssClass}">${type}</span>`;
+    })
+    .join('');
+  
+  // Stats com cores dinâmicas
+  const statsContainer = document.getElementById('statsBars');
+  statsContainer.innerHTML = '';
+  let totalStats = 0;
+  
+  const statLabels = {
+    'hp': 'PS',
+    'attack': 'Ataque',
+    'defense': 'Defesa',
+    'special-attack': 'Atq. Esp.',
+    'special-defense': 'Def. Esp.',
+    'speed': 'Velocidade'
+  };
+  
+  details.stats.forEach(stat => {
+    const label = statLabels[stat.name] || stat.name;
+    const percentage = Math.min(100, (stat.value / 255) * 100);
+    totalStats += stat.value;
+    
+    let statColorClass = 'low';
+    if (stat.value >= 100) statColorClass = 'high';
+    else if (stat.value >= 60) statColorClass = 'medium';
+    
+    statsContainer.innerHTML += `
+      <div class="stat-bar-container">
+        <span class="stat-label">${label}</span>
+        <div class="stat-bar-wrapper">
+          <div class="stat-bar ${statColorClass}" style="width: ${percentage}%"></div>
+        </div>
+        <span class="stat-value">${stat.value}</span>
+      </div>
+    `;
+  });
+  
+  document.getElementById('statsTotal').textContent = totalStats;
+  
+  // Habilidades
+  const abilitiesPT = details.abilities.map(a => capitalizeFirst(a.replace(/-/g, ' ')));
+  document.getElementById('modalAbilities').innerHTML = abilitiesPT
+    .map(a => `<span class="ability-badge">${a}</span>`)
+    .join('');
+  
+  // Descrição
+  document.getElementById('modalDescription').textContent = details.description;
+  
+  // Altura e Peso
+  document.getElementById('modalHeight').textContent = `${(details.height / 10).toFixed(1)} m`;
+  document.getElementById('modalWeight').textContent = `${(details.weight / 10).toFixed(1)} kg`;
+  
+  // Cadeia evolutiva
+  renderEvolutionChain(details.evolutionChain, details.id);
+  
+  // Show modal
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
 // Close modal
 function closeModal() {
   modal.style.display = 'none';
   modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = 'auto';
+}
+
+// Helper function to adjust color brightness
+function adjustColor(hex, percent) {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = Math.max(0, Math.min(255, (num >> 16) + amt));
+  const G = Math.max(0, Math.min(255, ((num >> 8) & 0x00ff) + amt));
+  const B = Math.max(0, Math.min(255, (num & 0x0000ff) + amt));
+  return '#' + ((1 << 24) + (R << 16) + (G << 8) + B).toString(16).slice(1);
 }
 
 // Setup modal close listener
