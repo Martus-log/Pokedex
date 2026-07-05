@@ -140,13 +140,14 @@ async function loadPokemonPage() {
     }
     
     // Adiciona apenas se não estiver na lista para evitar duplicatas (backend já fez o batch loading)
-    const newUniquePokemons = newPokemons.filter(p => !allPokemons.some(existing => existing.id === p.id));
-    allPokemons.push(...newUniquePokemons);
-    filteredPokemons = [...allPokemons];
-    allPokemonsList = [...allPokemons];
+        const newUniquePokemons = newPokemons.filter(p => !allPokemons.some(existing => existing.id === p.id));
+        allPokemons.push(...newUniquePokemons);
+        filteredPokemons = [...allPokemons];
+        allPokemonsList = [...allPokemons];
     
-    // Renderiza todos
-    renderPokemons(allPokemons);
+        // Renderiza apenas os novos cards (append)
+        const newCardsCount = allPokemons.length - (generationState.loadedCount || 0);
+        appendPokemons(newUniquePokemons, generationState.loadedCount);
     
     // Atualiza estado
     generationState.loadedCount += newPokemons.length;
@@ -285,6 +286,14 @@ function renderPokemons(pokemons) {
   
   pokemons.forEach((pokemon, index) => {
     const card = createPokemonCard(pokemon, index);
+    pokedexGrid.appendChild(card);
+  });
+}
+
+// Append new Pokémon cards (for "load more" - doesn't clear grid)
+function appendPokemons(pokemons, startIndex = 0) {
+  pokemons.forEach((pokemon, index) => {
+    const card = createPokemonCard(pokemon, startIndex + index);
     pokedexGrid.appendChild(card);
   });
 }
