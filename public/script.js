@@ -621,6 +621,12 @@ function setupFloatingActions() {
         return;
       }
       
+      const generationSelect = document.getElementById('generationSelect');
+      if (generationSelect) {
+        generationSelect.value = 'all';
+      }
+      generationState.currentGen = 'all';
+      
       await loadPokemonsByType(typeEnglish);
     });
   });
