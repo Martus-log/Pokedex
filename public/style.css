@@ -638,6 +638,16 @@ h1 {
   background: linear-gradient(135deg, #EE99AC, #de899c);
 }
 
+.type-sombrio,
+.type-dark {
+  background: linear-gradient(135deg, #705840, #604830);
+}
+
+.type-dark {
+  background-color: #75574C;
+  color: white;
+}
+
 /* Loading e Load More */
 .loading {
   text-align: center;
