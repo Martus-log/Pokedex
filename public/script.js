@@ -391,16 +391,23 @@ function createPokemonCard(pokemon, index = 0) {
   const primaryType = pokemon.types[0];
   const typeColor = typeColors[primaryType] || '#AAA67F';
   
-  const typesPT = pokemon.types.map(t => capitalizeFirst(typeToPortuguese[t] || t));
-  card.setAttribute('data-type', typesPT.join(' '));
+  const typesPT = pokemon.types.map(t => {
+      const translated = typeToPortuguese[t];
+      if (!translated) {
+        console.warn(`[WARN] Tipo '${t}' não tem tradução: usando original`);
+      }
+      return capitalizeFirst(translated || t);
+    });
+    card.setAttribute('data-type', typesPT.join(' '));
   
-  const typesHtml = typesPT
-    .map(type => {
-      const enType = portugueseToEnglish[type] || type.toLowerCase();
-      const cssClass = typeToClass[type] || `type-${enType}`;
-      return `<span class="type-badge ${cssClass}">${type}</span>`;
-    })
-    .join('');
+    const typesHtml = typesPT
+      .map(type => {
+        if (!type || type.trim() === '') return '';
+        const enType = portugueseToEnglish[type] || type.toLowerCase();
+        const cssClass = typeToClass[type] || `type-${enType}`;
+        return `<span class="type-badge ${cssClass}">${type}</span>`;
+      })
+      .join('');
   
   card.innerHTML = `
     <div class="pokemon-image-container" style="background: ${typeColor};">
